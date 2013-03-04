@@ -13,7 +13,8 @@ CGFloat const AutosavingIndicatiorViewDefaultInset = 4.f;
 CGFloat const AutosavingIndicatiorViewFadeDuration = 0.3f;
 CGFloat const AutosavingIndicatiorViewDelayAfterStopped = 1.f;
 CGFloat const AutosavingIndicatiorViewFontSize = 11.f;
-NSTimeInterval const AutosavingIndicatorViewDotsAnimationInterval = 0.2;
+
+NSTimeInterval const AutosavingIndicatorViewDotsAnimationInterval = 0.3;
 
 @implementation AutosavingIndicatorView {
     UILabel *_label;
