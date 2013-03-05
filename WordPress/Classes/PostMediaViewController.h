@@ -86,7 +86,7 @@ static inline double radians(double degrees) {
 - (void)deviceDidRotate:(NSNotification *)notification;
 - (void)showResizeActionSheet;
 - (void)showCustomSizeAlert;
-- (UIImage *)resizeImage:(UIImage *)original toSize:(MediaResize)resize;
+- (UIImage *)resizeImage:(UIImage *)original toSize:(MediaSize)resize;
 - (UIImage *)resizeImage:(UIImage *)original width:(CGFloat)width height:(CGFloat)height;
 - (void)pickPhotoFromPhotoLibrary:(id)sender;
 - (void)showOrientationChangedActionSheet;

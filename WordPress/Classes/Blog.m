@@ -265,20 +265,29 @@
     return NO;
 }
 
-- (NSDictionary *) getImageResizeDimensions{
+- (NSDictionary *)getImageResizeDimensions{
     CGSize smallSize, mediumSize, largeSize;
-    int small_size_w =      [[self getOptionValue:@"thumbnail_size_w"] intValue]    > 0 ? [[self getOptionValue:@"thumbnail_size_w"] intValue] : image_small_size_w;
-    int small_size_h =      [[self getOptionValue:@"thumbnail_size_h"] intValue]    > 0 ? [[self getOptionValue:@"thumbnail_size_h"] intValue] : image_small_size_h;
-    int medium_size_w =     [[self getOptionValue:@"medium_size_w"] intValue]       > 0 ? [[self getOptionValue:@"medium_size_w"] intValue] : image_medium_size_w;
-    int medium_size_h =     [[self getOptionValue:@"medium_size_h"] intValue]       > 0 ? [[self getOptionValue:@"medium_size_h"] intValue] : image_medium_size_h;
-    int large_size_w =      [[self getOptionValue:@"large_size_w"] intValue]        > 0 ? [[self getOptionValue:@"large_size_w"] intValue] : image_large_size_w;
-    int large_size_h =      [[self getOptionValue:@"large_size_h"] intValue]        > 0 ? [[self getOptionValue:@"large_size_h"] intValue] : image_large_size_h;
+    int small_size_w =      [[self getOptionValue:@"thumbnail_size_w"] intValue];
+    int small_size_h =      [[self getOptionValue:@"thumbnail_size_h"] intValue];
+    int medium_size_w =     [[self getOptionValue:@"medium_size_w"] intValue];
+    int medium_size_h =     [[self getOptionValue:@"medium_size_h"] intValue];
+    int large_size_w =      [[self getOptionValue:@"large_size_w"] intValue];
+    int large_size_h =      [[self getOptionValue:@"large_size_h"] intValue];
     
     smallSize = CGSizeMake(small_size_w, small_size_h);
+    if (CGSizeEqualToSize(smallSize, CGSizeZero)) {
+        smallSize = MediaSizeDefaultSmall;
+    }
     mediumSize = CGSizeMake(medium_size_w, medium_size_h);
+    if (CGSizeEqualToSize(mediumSize, CGSizeZero)) {
+        mediumSize = MediaSizeDefaultMedium;
+    }
     largeSize = CGSizeMake(large_size_w, large_size_h);
-    
-    return [NSDictionary dictionaryWithObjectsAndKeys: [NSValue valueWithCGSize:smallSize], @"smallSize", 
+    if (CGSizeEqualToSize(largeSize, CGSizeZero)) {
+        largeSize = MediaSizeDefaultLarge;
+    }
+
+    return [NSDictionary dictionaryWithObjectsAndKeys: [NSValue valueWithCGSize:smallSize], @"smallSize",
             [NSValue valueWithCGSize:mediumSize], @"mediumSize", 
             [NSValue valueWithCGSize:largeSize], @"largeSize", 
             nil];

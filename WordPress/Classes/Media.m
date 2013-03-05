@@ -11,6 +11,10 @@
 #import "NSString+Helpers.h"
 #import "AFHTTPRequestOperation.h"
 
+CGSize const MediaSizeDefaultSmall = {240, 180};
+CGSize const MediaSizeDefaultMedium = {480, 360};
+CGSize const MediaSizeDefaultLarge = {640, 480};
+
 @interface Media (PrivateMethods)
 - (void)xmlrpcUploadWithSuccess:(void (^)())success failure:(void (^)(NSError *error))failure ;
 @end
@@ -297,7 +301,7 @@
     }
 }
 
-- (void)setImage:(UIImage *)image withSize:(MediaResize)size {
+- (void)setImage:(UIImage *)image withSize:(MediaSize)size {
     //Read the predefined resizeDimensions and fix them by using the image orietation
     NSDictionary* predefDim = [self.blog getImageResizeDimensions];
     CGSize smallSize =  [[predefDim objectForKey: @"smallSize"] CGSizeValue];
@@ -318,13 +322,13 @@
     
     CGSize newSize;
     switch (size) {
-        case kResizeSmall:
+        case MediaSizeSmall:
 			newSize = smallSize;
             break;
-        case kResizeMedium:
+        case MediaSizeMedium:
             newSize = mediumSize;
             break;
-        case kResizeLarge:
+        case MediaSizeLarge:
             newSize = largeSize;
             break;
         default:

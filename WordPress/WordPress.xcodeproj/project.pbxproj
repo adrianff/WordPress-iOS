@@ -647,6 +647,7 @@
 		E1C43CA712E4D09E00330262 /* PageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E1C43CA612E4D09E00330262 /* PageViewController.m */; };
 		E1CAAE3713F413F00000C58D /* WPKeyboardToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CAAE3613F413F00000C58D /* WPKeyboardToolbar.m */; };
 		E1CAAE3A13F4142E0000C58D /* WPKeyboardToolbarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CAAE3913F4142E0000C58D /* WPKeyboardToolbarButtonItem.m */; };
+		E1CF759F16E671A700445852 /* BlogTest.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CF759E16E671A700445852 /* BlogTest.m */; };
 		E1D0D81016D3B85500E33F4C /* Safari.png in Resources */ = {isa = PBXBuildFile; fileRef = E1D0D80C16D3B85500E33F4C /* Safari.png */; };
 		E1D0D81116D3B85500E33F4C /* Safari@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1D0D80D16D3B85500E33F4C /* Safari@2x.png */; };
 		E1D0D81216D3B85500E33F4C /* Safari@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = E1D0D80E16D3B85500E33F4C /* Safari@2x~ipad.png */; };
@@ -755,7 +756,7 @@
 		2A8FF7D80E8A32F7001A9A40 /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = lock.png; path = Resources/Images/lock.png; sourceTree = "<group>"; };
 		2F970F720DF92274006BD934 /* PostsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostsViewController.h; sourceTree = "<group>"; };
 		2F970F730DF92274006BD934 /* PostsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostsViewController.m; sourceTree = "<group>"; };
-		2F970F970DF929B8006BD934 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		2F970F970DF929B8006BD934 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = Constants.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2FAE97040E33B21600CA8540 /* defaultPostTemplate_old.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = defaultPostTemplate_old.html; path = Resources/HTML/defaultPostTemplate_old.html; sourceTree = "<group>"; };
 		2FAE97050E33B21600CA8540 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = license.txt; sourceTree = "<group>"; };
 		2FAE97070E33B21600CA8540 /* xhtml1-transitional.dtd */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = "xhtml1-transitional.dtd"; path = "Resources/HTML/xhtml1-transitional.dtd"; sourceTree = "<group>"; };
@@ -1209,7 +1210,7 @@
 		8370D1BC11FA6295009D650F /* AddSiteViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = AddSiteViewController.xib; path = Resources/AddSiteViewController.xib; sourceTree = "<group>"; };
 		837576C211305C67002EAA27 /* hasLocation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hasLocation.png; path = Resources/Images/hasLocation.png; sourceTree = "<group>"; };
 		8383178512270E980047B476 /* PostMediaViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostMediaViewController.h; sourceTree = "<group>"; };
-		8383178612270E980047B476 /* PostMediaViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostMediaViewController.m; sourceTree = "<group>"; };
+		8383178612270E980047B476 /* PostMediaViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = PostMediaViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		8383178712270E980047B476 /* PostMediaViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = PostMediaViewController.xib; path = Resources/PostMediaViewController.xib; sourceTree = "<group>"; };
 		838C672C1210C3C300B09CA3 /* Post.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Post.h; sourceTree = "<group>"; };
 		838C672D1210C3C300B09CA3 /* Post.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Post.m; sourceTree = "<group>"; };
@@ -1255,7 +1256,7 @@
 		ACAC79C50E1F50EB00AC7074 /* WPSelectionTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPSelectionTableViewController.m; sourceTree = "<group>"; };
 		ACAC7B690E1F8C0700AC7074 /* WPSelectionTableViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = WPSelectionTableViewController.xib; path = Resources/WPSelectionTableViewController.xib; sourceTree = "<group>"; };
 		ACBAB5FC0E121C7300F38795 /* PostSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostSettingsViewController.h; sourceTree = "<group>"; };
-		ACBAB5FD0E121C7300F38795 /* PostSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostSettingsViewController.m; sourceTree = "<group>"; };
+		ACBAB5FD0E121C7300F38795 /* PostSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = PostSettingsViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		ACBAB6080E121CF700F38795 /* PostSettingsViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = PostSettingsViewController.xib; path = Resources/PostSettingsViewController.xib; sourceTree = "<group>"; };
 		ACBAB67C0E1247CC00F38795 /* PostPreviewViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = PostPreviewViewController.xib; path = Resources/PostPreviewViewController.xib; sourceTree = "<group>"; };
 		ACBAB6840E1247F700F38795 /* PostPreviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostPreviewViewController.h; sourceTree = "<group>"; };
@@ -1505,6 +1506,8 @@
 		E1CAAE3613F413F00000C58D /* WPKeyboardToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPKeyboardToolbar.m; sourceTree = "<group>"; };
 		E1CAAE3813F4142E0000C58D /* WPKeyboardToolbarButtonItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WPKeyboardToolbarButtonItem.h; sourceTree = "<group>"; };
 		E1CAAE3913F4142E0000C58D /* WPKeyboardToolbarButtonItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPKeyboardToolbarButtonItem.m; sourceTree = "<group>"; };
+		E1CF759D16E671A700445852 /* BlogTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlogTest.h; sourceTree = "<group>"; };
+		E1CF759E16E671A700445852 /* BlogTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlogTest.m; sourceTree = "<group>"; };
 		E1D0D80C16D3B85500E33F4C /* Safari.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Safari.png; sourceTree = "<group>"; };
 		E1D0D80D16D3B85500E33F4C /* Safari@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Safari@2x.png"; sourceTree = "<group>"; };
 		E1D0D80E16D3B85500E33F4C /* Safari@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Safari@2x~ipad.png"; sourceTree = "<group>"; };
@@ -2902,6 +2905,8 @@
 				E183EC9F16B2164900C2EB11 /* EditPostViewControllerTest.m */,
 				E150520A16CAC5C400D3DDDC /* BlogJetpackTest.h */,
 				E150520B16CAC5C400D3DDDC /* BlogJetpackTest.m */,
+				E1CF759D16E671A700445852 /* BlogTest.h */,
+				E1CF759E16E671A700445852 /* BlogTest.m */,
 			);
 			path = WordPressTest;
 			sourceTree = "<group>";
@@ -3827,6 +3832,7 @@
 				E150520F16CAC75A00D3DDDC /* CoreDataTestHelper.m in Sources */,
 				E131CB5E16CAD659004B0314 /* AsyncTestHelper.m in Sources */,
 				E15618FD16DB8677006532C4 /* UIKitTestHelper.m in Sources */,
+				E1CF759F16E671A700445852 /* BlogTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

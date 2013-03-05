@@ -18,9 +18,18 @@ typedef NS_ENUM(NSUInteger, MediaRemoteStatus) {
     MediaRemoteStatusProcessing, // Intermediate status before uploading
 };
 
+typedef NS_ENUM(NSUInteger, MediaSize) {
+	MediaSizeSmall,
+	MediaSizeMedium,
+	MediaSizeLarge,
+	MediaSizeOriginal
+};
+
+extern CGSize const MediaSizeDefaultSmall;
+extern CGSize const MediaSizeDefaultMedium;
+extern CGSize const MediaSizeDefaultLarge;
+
 @interface Media :  NSManagedObject  
-{
-}
 
 @property (nonatomic, strong) NSNumber * mediaID;
 @property (nonatomic, strong) NSString * mediaType;
@@ -50,7 +59,7 @@ typedef NS_ENUM(NSUInteger, MediaRemoteStatus) {
 - (void)uploadWithSuccess:(void (^)())success failure:(void (^)(NSError *error))failure;
 - (void)remove;
 - (void)save;
-- (void)setImage:(UIImage *)image withSize:(MediaResize)size;
+- (void)setImage:(UIImage *)image withSize:(MediaSize)size;
 
 @end
 
