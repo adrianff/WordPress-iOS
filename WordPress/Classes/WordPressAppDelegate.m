@@ -5,7 +5,6 @@
 #import "Reachability.h"
 #import "NSString+Helpers.h"
 #import "CPopoverManager.h"
-#import "BetaUIWindow.h"
 #import "MigrateBlogsFromFiles.h"
 //#import "InAppSettings.h"
 #import "Blog.h"
@@ -74,11 +73,6 @@
 }
 
 - (void)setupFacebook {
-	//BETA FEEDBACK BAR, COMMENT THIS OUT BEFORE RELEASE
-	//BetaUIWindow *betaWindow = [[BetaUIWindow alloc] initWithFrame:CGRectZero];
-	//betaWindow.hidden = NO;
-	//BETA FEEDBACK BAR
-
     facebook = [[Facebook alloc] initWithAppId:kFacebookAppID andDelegate:self];
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([defaults objectForKey:kFacebookAccessTokenKey]
