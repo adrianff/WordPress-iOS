@@ -9,6 +9,9 @@ Source code:
 http://ios.trac.wordpress.org/
 http://ios.svn.wordpress.org/
 
+Coding Style Guidelines:
+https://github.com/wordpress-mobile/WordPress-iOS/wiki/Objective-C-Style-Guide
+
 
 Building
 ---------------------------------------------------------------
