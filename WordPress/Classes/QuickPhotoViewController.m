@@ -289,16 +289,16 @@
                 if([[NSUserDefaults standardUserDefaults] objectForKey:@"media_resize_preference"] != nil)
                     resizePreference = [[[NSUserDefaults standardUserDefaults] objectForKey:@"media_resize_preference"] intValue];
                 
-                MediaResize newSize = kResizeLarge;
+                MediaSize newSize = MediaSizeLarge;
                 switch (resizePreference) {
                     case 1:
-                        newSize = kResizeSmall;
+                        newSize = MediaSizeSmall;
                         break;
                     case 2:
-                        newSize = kResizeMedium;
+                        newSize = MediaSizeMedium;
                         break;
                     case 4:
-                        newSize = kResizeOriginal;
+                        newSize = MediaSizeOriginal;
                         break;
                 }
                 

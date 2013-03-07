@@ -448,31 +448,31 @@
 		switch (buttonIndex) {
 			case 0:
 				if (actionSheet.numberOfButtons == 2)
-					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeOriginal]];
 				else 
-					[self useImage:[self resizeImage:currentImage toSize:kResizeSmall]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeSmall]];
 				break;
 			case 1:
 				if (actionSheet.numberOfButtons == 2)
 					[self showCustomSizeAlert];
 				else if (actionSheet.numberOfButtons == 3)
-					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeOriginal]];
 				else
-					[self useImage:[self resizeImage:currentImage toSize:kResizeMedium]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeMedium]];
 				break;
 			case 2:
 				if (actionSheet.numberOfButtons == 3)
 					[self showCustomSizeAlert];
 				else if (actionSheet.numberOfButtons == 4)
-					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeOriginal]];
 				else
-					[self useImage:[self resizeImage:currentImage toSize:kResizeLarge]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeLarge]];
 				break;
 			case 3:
 				if (actionSheet.numberOfButtons == 4)
 					[self showCustomSizeAlert];
 				else
-					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
+					[self useImage:[self resizeImage:currentImage toSize:MediaSizeOriginal]];
 				break;
 			case 4: 
 				[self showCustomSizeAlert]; 
@@ -988,23 +988,23 @@
             }
 			case 1:
             {
-				[self useImage:[self resizeImage:currentImage toSize:kResizeSmall]];
+				[self useImage:[self resizeImage:currentImage toSize:MediaSizeSmall]];
 				break;
             }
 			case 2:
             {
-				[self useImage:[self resizeImage:currentImage toSize:kResizeMedium]];
+				[self useImage:[self resizeImage:currentImage toSize:MediaSizeMedium]];
 				break;
             }
 			case 3:
             {
-				[self useImage:[self resizeImage:currentImage toSize:kResizeLarge]];
+				[self useImage:[self resizeImage:currentImage toSize:MediaSizeLarge]];
 				break;
             }
 			case 4:
             {
 				//[self useImage:currentImage];
-                [self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
+                [self useImage:[self resizeImage:currentImage toSize:MediaSizeOriginal]];
 				break;
             }
 			default:
@@ -1179,7 +1179,7 @@
     return oimg;
 }
 
-- (UIImage *)resizeImage:(UIImage *)original toSize:(MediaResize)resize {
+- (UIImage *)resizeImage:(UIImage *)original toSize:(MediaSize)resize {
     NSDictionary* predefDim = [self.apost.blog getImageResizeDimensions];
     CGSize smallSize =  [[predefDim objectForKey: @"smallSize"] CGSizeValue];
     CGSize mediumSize = [[predefDim objectForKey: @"mediumSize"] CGSizeValue];
@@ -1202,7 +1202,7 @@
 	// Resize the image using the selected dimensions
 	UIImage *resizedImage = original;
 	switch (resize) {
-		case kResizeSmall:
+		case MediaSizeSmall:
 			if(currentImage.size.width > smallSize.width  || currentImage.size.height > smallSize.height)
 				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
 															  bounds:smallSize  
@@ -1212,7 +1212,7 @@
 															  bounds:originalSize  
 												interpolationQuality:kCGInterpolationHigh];
 			break;
-		case kResizeMedium:
+		case MediaSizeMedium:
 			if(currentImage.size.width > mediumSize.width  || currentImage.size.height > mediumSize.height) 
 				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
 															  bounds:mediumSize  
@@ -1222,7 +1222,7 @@
 															  bounds:originalSize  
 												interpolationQuality:kCGInterpolationHigh];
 			break;
-		case kResizeLarge:
+		case MediaSizeLarge:
 			if(currentImage.size.width > largeSize.width || currentImage.size.height > largeSize.height) 
 				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
 															  bounds:largeSize  
@@ -1232,7 +1232,7 @@
 															  bounds:originalSize  
 												interpolationQuality:kCGInterpolationHigh];
 			break;
-		case kResizeOriginal:
+		case MediaSizeOriginal:
 			resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit 
 														  bounds:originalSize 
 											interpolationQuality:kCGInterpolationHigh];

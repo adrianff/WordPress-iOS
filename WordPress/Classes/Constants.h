@@ -159,13 +159,6 @@ typedef NS_ENUM(NSUInteger, MediaType) {
 	kVideo
 };
 
-typedef NS_ENUM(NSUInteger, MediaResize) {
-	kResizeSmall,
-	kResizeMedium,
-	kResizeLarge,
-	kResizeOriginal
-};
-
 typedef NS_ENUM(NSUInteger, MediaOrientation) {
 	kPortrait,
 	kLandscape
@@ -177,12 +170,3 @@ typedef NS_ENUM(NSUInteger, EditPageMode) {
 	kAutorecoverPage,
 	kRefreshPage
 };
-
-
-//Blog Predefined Options
-#define image_small_size_w 240
-#define image_small_size_h 180
-#define image_medium_size_w 480
-#define image_medium_size_h 360
-#define image_large_size_w 640
-#define image_large_size_h 480
