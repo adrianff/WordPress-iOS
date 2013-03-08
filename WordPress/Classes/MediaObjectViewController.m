@@ -14,6 +14,7 @@
 @synthesize media, imageView, videoPlayer, deleteButton, insertButton, cancelButton, isDeleting, isInserting, appDelegate, toolbar;
 @synthesize scrollView;
 @synthesize currentActionSheet;
+@synthesize delegate = _delegate;
 
 #pragma mark -
 #pragma mark View lifecycle

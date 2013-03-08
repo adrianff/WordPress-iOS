@@ -3,6 +3,7 @@
 #import "PostsViewController.h"
 #import "EditPostViewController.h"
 #import "PostTableViewCell.h"
+#import "CustomNavigationController.h"
 #import "WordPressAppDelegate.h"
 #import "Reachability.h"
 
@@ -255,7 +256,7 @@
         [self resetView];
     Post *post = [Post newDraftForBlog:self.blog];
     EditPostViewController *editPostViewController = [[EditPostViewController alloc] initWithPost:[post createRevision]];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:editPostViewController];
+    CustomNavigationController *navController = [[CustomNavigationController alloc] initWithRootViewController:editPostViewController];
     navController.modalPresentationStyle = UIModalPresentationPageSheet;
     [self.panelNavigationController presentModalViewController:navController animated:YES];
 }
@@ -263,7 +264,7 @@
 // For iPhone
 - (void)editPost:(AbstractPost *)apost {
     EditPostViewController *editPostViewController = [[EditPostViewController alloc] initWithPost:[apost createRevision]];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:editPostViewController];
+    CustomNavigationController *navController = [[CustomNavigationController alloc] initWithRootViewController:editPostViewController];
     navController.modalPresentationStyle = UIModalPresentationPageSheet;
     [self.panelNavigationController presentModalViewController:navController animated:YES];
 }

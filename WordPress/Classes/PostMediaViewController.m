@@ -17,6 +17,7 @@
 #define TAG_ACTIONSHEET_VIDEO 2
 #define NUMBERS	@"0123456789"
 
+static CGFloat presentAnimationDuration = 0.5f;
 
 @interface PostMediaViewController ()
 @property (nonatomic, strong) AbstractPost *apost;
@@ -72,12 +73,14 @@
     [super viewDidLoad];
 	
 	self.currentOrientation = [self interpretOrientation:[UIDevice currentDevice].orientation];
-		
+    
 	[self initObjects];
 	self.videoEnabled = YES;
     [self checkVideoPressEnabled];
 	
     [self addNotifications];
+    
+    self.postDetailViewController.navigationController.delegate = self;
 }
 
 
@@ -166,7 +169,7 @@
         cell.textLabel.text = media.title;
     else
         cell.textLabel.text = media.filename;
-
+    
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     if (media.remoteStatus == MediaRemoteStatusPushing) {
         cell.detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Uploading: %.1f%%. Tap to cancel.", @""), media.progress * 100.0];
@@ -177,8 +180,8 @@
         cell.detailTextLabel.text = NSLocalizedString(@"Upload failed - tap to retry.", @"");
     } else {
         if ([media.mediaType isEqualToString:@"image"]) {
-            cell.detailTextLabel.text = [NSString stringWithFormat:@"%dx%d %@", 
-                                         [media.width intValue], [media.height intValue], filesizeString];        
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"%dx%d %@",
+                                         [media.width intValue], [media.height intValue], filesizeString];
         } else if ([media.mediaType isEqualToString:@"video"]) {
             NSNumber *valueForDisplay = [NSNumber numberWithDouble:[media.length doubleValue]];
             NSNumber *days = [NSNumber numberWithDouble:
@@ -201,11 +204,11 @@
                                          @"%02d:%02d:%02d %@",
                                          [hours intValue],
                                          [minutes intValue],
-                                         [seconds intValue], 
+                                         [seconds intValue],
                                          filesizeString];
         }
     }
-
+    
 	[cell.imageView setBounds:CGRectMake(0.0f, 0.0f, 75.0f, 75.0f)];
 	[cell.imageView setClipsToBounds:NO];
 	[cell.imageView setFrame:CGRectMake(0.0f, 0.0f, 75.0f, 75.0f)];
@@ -224,7 +227,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     Media *media = [self.resultsController objectAtIndexPath:indexPath];
-
+    
     if (media.remoteStatus == MediaRemoteStatusFailed) {
         [media uploadWithSuccess:^{
             if (([media isDeleted])) {
@@ -239,19 +242,64 @@
     } else if (media.remoteStatus == MediaRemoteStatusProcessing) {
         // Do nothing. See trac #1508
     } else {
-        MediaObjectViewController *mediaView = [[MediaObjectViewController alloc] initWithNibName:@"MediaObjectView" bundle:nil];
+        mediaView = [[MediaObjectViewController alloc] initWithNibName:@"MediaObjectView" bundle:nil];
         [mediaView setMedia:media];
-
+        
         if(IS_IPAD == YES) {
 			mediaView.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
 			mediaView.modalPresentationStyle = UIModalPresentationFormSheet;
 			
             [self presentModalViewController:mediaView animated:YES];
-		}
-        else
-            [self.postDetailViewController.navigationController pushViewController:mediaView animated:YES];
+		} else {
+            //do image zoom
+            mediaView.delegate = self;
+            
+            UITableViewCell *cell = [self.table cellForRowAtIndexPath:indexPath];
+            
+            previewImageView = [[UIImageView alloc] initWithFrame:cell.imageView.frame];
+            if((media != nil) && ([media.mediaType isEqualToString:@"video"])) {
+                previewImageView.image = [UIImage imageWithData:media.thumbnail];
+            } else {
+                previewImageView.image = [UIImage imageWithContentsOfFile:media.localURL];
+                if((previewImageView.image == nil) && (media.remoteURL != nil)) {
+                    [previewImageView setImageWithURL:[NSURL URLWithString:media.remoteURL]];
+                }
+            }
+            if(previewImageView.image) {
+                previewImageView.image = cell.imageView.image;
+            }
+            
+            CGRect rect = cell.imageView.frame;
+            CGRect rectOfCellInTableView = [tableView rectForRowAtIndexPath:indexPath];
+            CGRect rectOfCellInSuperview = [tableView convertRect:rectOfCellInTableView toView:[tableView superview]];
+            cellOriginY = rectOfCellInSuperview.origin.y;
+            
+            float width = previewImageView.image.size.width;
+            float height = previewImageView.image.size.height;
+            
+            //image not loaded
+            if(height == 0){
+                width = rect.size.width;
+                height = rect.size.height;
+            }
+            
+            float aspectRatio = height / width;
+            width = 75.0;
+            height = aspectRatio * width;
+            
+            previewImageView.frame = CGRectMake(rect.origin.x, cellOriginY, width, height);
+            [self.view addSubview:previewImageView];
+            
+            void(^block)(void) = ^{
+                [self.postDetailViewController.navigationController pushViewController:mediaView animated:NO];
+            };
+            [self animateIn:^{
+                block();
+            }];
+        }
+        
     }
-
+    
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
@@ -298,16 +346,16 @@
 	
 	UIActionSheet *actionSheet;
 	if([self isDeviceSupportVideoAndVideoPressEnabled]) {
-		actionSheet = [[UIActionSheet alloc] initWithTitle:@"" 
-												  delegate:self 
-										 cancelButtonTitle:NSLocalizedString(@"Cancel", @"") 
-									destructiveButtonTitle:nil 
+		actionSheet = [[UIActionSheet alloc] initWithTitle:@""
+												  delegate:self
+										 cancelButtonTitle:NSLocalizedString(@"Cancel", @"")
+									destructiveButtonTitle:nil
 										 otherButtonTitles:NSLocalizedString(@"Add Video from Library", @""),NSLocalizedString(@"Record Video", @""),nil];
-	} 
+	}
 	else { //device has video recording capability but VideoPress could be not enabled on
-       /* isShowingMediaPickerActionSheet = NO;
-        [self pickPhotoFromPhotoLibrary:sender];
-        return;*/
+        /* isShowingMediaPickerActionSheet = NO;
+         [self pickPhotoFromPhotoLibrary:sender];
+         return;*/
 		isShowingMediaPickerActionSheet = NO;
 		NSString *faultString = NSLocalizedString(@"You can upload videos to your blog with VideoPress. Would you like to learn more about VideoPress now?", @"");
         if (currentAlert == nil) {
@@ -325,12 +373,12 @@
 	
     actionSheet.tag = TAG_ACTIONSHEET_VIDEO;
     actionSheet.actionSheetStyle = UIActionSheetStyleDefault;
-    if (IS_IPAD) { 
+    if (IS_IPAD) {
         [actionSheet showFromBarButtonItem:postDetailViewController.movieButton animated:YES];
     } else {
         [actionSheet showInView:postDetailViewController.view];
     }
-
+    
     WordPressAppDelegate *appDelegate = (WordPressAppDelegate*)[[UIApplication sharedApplication] delegate];
     [appDelegate setAlertRunning:YES];
 	
@@ -351,10 +399,10 @@
 	
 	UIActionSheet *actionSheet;
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-		actionSheet = [[UIActionSheet alloc] initWithTitle:@"" 
-												  delegate:self 
-										 cancelButtonTitle:NSLocalizedString(@"Cancel", @"") 
-									destructiveButtonTitle:nil 
+		actionSheet = [[UIActionSheet alloc] initWithTitle:@""
+												  delegate:self
+										 cancelButtonTitle:NSLocalizedString(@"Cancel", @"")
+									destructiveButtonTitle:nil
 										 otherButtonTitles:NSLocalizedString(@"Add Photo from Library", @""),NSLocalizedString(@"Take Photo", @""),nil];
 	}
 	else {
@@ -378,9 +426,63 @@
     
     WordPressAppDelegate *appDelegate = (WordPressAppDelegate*)[[UIApplication sharedApplication] delegate];
     [appDelegate setAlertRunning:YES];
-	
 }
 
+-(void)animateIn: (void(^)(void))completion {
+    float width = previewImageView.image.size.width;
+    float height = previewImageView.image.size.height;
+    
+    //image not loaded
+    if(height == 0){
+        [previewImageView removeFromSuperview];
+        return;
+    }
+    
+    float aspectRatio = height / width;
+    
+    width = self.postDetailViewController.view.frame.size.width;
+    height = aspectRatio * self.postDetailViewController.view.frame.size.width;
+    
+    float top = (self.postDetailViewController.view.frame.size.height - height) / 2;
+    
+    CGRect toFrame = CGRectMake(0, top, width, height);
+    [UIView animateWithDuration:presentAnimationDuration delay:0.0 options:UIViewAnimationCurveEaseIn animations:^{
+        [previewImageView setFrame:toFrame];
+        
+    } completion:^(BOOL finished) {
+        CABasicAnimation *zoomAnimation = [CABasicAnimation animationWithKeyPath:@"zoomAnimation"];
+        zoomAnimation.duration = presentAnimationDuration * 0.1;
+        zoomAnimation.timingFunction = [CATransaction animationTimingFunction];
+        zoomAnimation.toValue = [NSNumber numberWithFloat:0.0];
+        zoomAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+        
+        [previewImageView removeFromSuperview];
+        
+        if (completion) {
+            completion();
+        }
+    }];
+}
+
+-(void)animateOut {
+    [self.view addSubview:previewImageView];
+    
+    CABasicAnimation *zoomAnimation = [CABasicAnimation animationWithKeyPath:@"zoomAnimation"];
+    zoomAnimation.duration = presentAnimationDuration * 0.1;
+    zoomAnimation.timingFunction = [CATransaction animationTimingFunction];
+    zoomAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+    zoomAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    
+    CGRect toFrame = CGRectMake(0, cellOriginY, 75.0, 75.0);
+    
+    [UIView animateWithDuration:presentAnimationDuration delay:presentAnimationDuration * 0.1 options:UIViewAnimationCurveEaseIn animations:^{
+        [previewImageView setFrame:toFrame];
+    } completion:^(BOOL finished) {
+        [previewImageView removeFromSuperview];
+        //memory managment
+        previewImageView = nil;
+    }];
+}
 
 #pragma mark -
 #pragma mark UIPopover Delegate Methods
@@ -399,7 +501,7 @@
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
-
+    
 	if(isShowingMediaPickerActionSheet == YES) {
 		switch (actionSheet.numberOfButtons) {
 			case 2:
@@ -449,7 +551,7 @@
 			case 0:
 				if (actionSheet.numberOfButtons == 2)
 					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
-				else 
+				else
 					[self useImage:[self resizeImage:currentImage toSize:kResizeSmall]];
 				break;
 			case 1:
@@ -474,8 +576,8 @@
 				else
 					[self useImage:[self resizeImage:currentImage toSize:kResizeOriginal]];
 				break;
-			case 4: 
-				[self showCustomSizeAlert]; 
+			case 4:
+				[self showCustomSizeAlert];
 				break;
 		}
 		self.isShowingResizeActionSheet = NO;
@@ -513,7 +615,7 @@
             }
 			[[CPopoverManager instance] setCurrentPopoverController:addPopover];
 		}
-		else {			
+		else {
 			[postDetailViewController.navigationController presentModalViewController:picker animated:YES];
 		}
     }
@@ -547,7 +649,7 @@
 	}
 	
 	if(IS_IPAD == YES) {
-		UIBarButtonItem *barButton = postDetailViewController.movieButton;	
+		UIBarButtonItem *barButton = postDetailViewController.movieButton;
 		if (addPopover == nil) {
 			addPopover = [[UIPopoverController alloc] initWithContentViewController:picker];
             if ([addPopover respondsToSelector:@selector(popoverBackgroundViewClass)]) {
@@ -563,17 +665,17 @@
 	}
 	
 	/*[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(deviceDidRotate:)
-												 name:@"UIDeviceOrientationDidChangeNotification" object:nil];*/
+     selector:@selector(deviceDidRotate:)
+     name:@"UIDeviceOrientationDidChangeNotification" object:nil];*/
 }
 
 - (void)pickPhotoFromPhotoLibrary:(id)sender {
 	UIBarButtonItem *barButton = nil;
-
+    
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
         if (IS_IPAD && addPopover != nil) {
             [addPopover dismissPopoverAnimated:YES];
-        }        
+        }
         picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
         if ([(UIView *)sender tag] == TAG_ACTIONSHEET_VIDEO) {
 			barButton = postDetailViewController.movieButton;
@@ -599,7 +701,7 @@
 						picker.videoQuality = UIImagePickerControllerQualityTypeMedium;
 						break;
 				}
-			}	
+			}
         } else {
             if (isPickingFeaturedImage)
                 barButton = postDetailViewController.settingsButton;
@@ -665,10 +767,10 @@
     }
     
 	isShowingChangeOrientationActionSheet = YES;
-	UIActionSheet *orientationActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Orientation changed during recording. Please choose which orientation to use for this video.", @"") 
-																		delegate:self 
-															   cancelButtonTitle:nil 
-														  destructiveButtonTitle:nil 
+	UIActionSheet *orientationActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Orientation changed during recording. Please choose which orientation to use for this video.", @"")
+																		delegate:self
+															   cancelButtonTitle:nil
+														  destructiveButtonTitle:nil
 															   otherButtonTitles:NSLocalizedString(@"Portrait", @""), NSLocalizedString(@"Landscape", @""), nil];
 	[orientationActionSheet showInView:postDetailViewController.view];
 }
@@ -684,7 +786,7 @@
         CGSize largeSize =  [[predefDim objectForKey: @"largeSize"] CGSizeValue];
         CGSize originalSize = CGSizeMake(currentImage.size.width, currentImage.size.height); //The dimensions of the image, taking orientation into account.
         
-        switch (currentImage.imageOrientation) { 
+        switch (currentImage.imageOrientation) {
             case UIImageOrientationLeft:
             case UIImageOrientationLeftMirrored:
             case UIImageOrientationRight:
@@ -706,31 +808,31 @@
 		//NSLog(@"img dimension: %f x %f ",currentImage.size.width, currentImage.size.height );
 		
 		if(currentImage.size.width > largeSize.width  && currentImage.size.height > largeSize.height) {
-			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"") 
-															delegate:self 
-												   cancelButtonTitle:nil 
-											  destructiveButtonTitle:nil 
+			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"")
+															delegate:self
+												   cancelButtonTitle:nil
+											  destructiveButtonTitle:nil
 												   otherButtonTitles:resizeSmallStr, resizeMediumStr, resizeLargeStr, originalSizeStr, NSLocalizedString(@"Custom", @""), nil];
 			
 		} else if(currentImage.size.width > mediumSize.width  && currentImage.size.height > mediumSize.height) {
-			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"") 
-															delegate:self 
-												   cancelButtonTitle:nil 
-											  destructiveButtonTitle:nil 
+			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"")
+															delegate:self
+												   cancelButtonTitle:nil
+											  destructiveButtonTitle:nil
 												   otherButtonTitles:resizeSmallStr, resizeMediumStr, originalSizeStr, NSLocalizedString(@"Custom", @""), nil];
 			
 		} else if(currentImage.size.width > smallSize.width  && currentImage.size.height > smallSize.height) {
-			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"") 
-															delegate:self 
-												   cancelButtonTitle:nil 
-											  destructiveButtonTitle:nil 
+			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"")
+															delegate:self
+												   cancelButtonTitle:nil
+											  destructiveButtonTitle:nil
 												   otherButtonTitles:resizeSmallStr, originalSizeStr, NSLocalizedString(@"Custom", @""), nil];
 			
 		} else {
-			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"") 
-															delegate:self 
-												   cancelButtonTitle:nil 
-											  destructiveButtonTitle:nil 
+			resizeActionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"Choose Image Size", @"")
+															delegate:self
+												   cancelButtonTitle:nil
+											  destructiveButtonTitle:nil
 												   otherButtonTitles: originalSizeStr, NSLocalizedString(@"Custom", @""), nil];
 		}
 		
@@ -745,7 +847,7 @@
 	//check the inserted characters: the user can use cut-and-paste instead of using the keyboard, and can insert letters and spaces
 	NSCharacterSet *cs = [[NSCharacterSet characterSetWithCharactersInString:NUMBERS] invertedSet];
     NSString *filtered = [[string componentsSeparatedByCharactersInSet:cs] componentsJoinedByString:@""];
-    if( [string isEqualToString:filtered] == NO ) return NO; 
+    if( [string isEqualToString:filtered] == NO ) return NO;
 	
     NSString *newString = [textField.text stringByReplacingCharactersInRange:range withString:string];
 	
@@ -764,78 +866,78 @@
 - (void)showCustomSizeAlert {
 	if(self.isShowingCustomSizeAlert || currentAlert != nil)
         return;
-
+    
     isShowingCustomSizeAlert = YES;
-
+    
     UITextField *textWidth, *textHeight;
     UILabel *labelWidth, *labelHeight;
-
+    
     NSString *lineBreaks;
-
+    
     if (IS_IPAD)
         lineBreaks = @"\n\n\n\n";
     else
         lineBreaks = @"\n\n\n";
-
-
+    
+    
     customSizeAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Custom Size", @"")
                                                  message:lineBreaks // IMPORTANT
                                                 delegate:self
                                        cancelButtonTitle:NSLocalizedString(@"Cancel", @"")
                                        otherButtonTitles:NSLocalizedString(@"OK", @""), nil];
-
+    
     labelWidth = [[UILabel alloc] initWithFrame:CGRectMake(12.0, 50.0, 125.0, 25.0)];
     labelWidth.backgroundColor = [UIColor clearColor];
     labelWidth.textColor = [UIColor whiteColor];
     labelWidth.text = NSLocalizedString(@"Width", @"");
     [customSizeAlert addSubview:labelWidth];
-
+    
     textWidth = [[UITextField alloc] initWithFrame:CGRectMake(12.0, 80.0, 125.0, 25.0)];
     [textWidth setBackgroundColor:[UIColor whiteColor]];
     [textWidth setPlaceholder:NSLocalizedString(@"Width", @"")];
     [textWidth setKeyboardType:UIKeyboardTypeNumberPad];
     [textWidth setDelegate:self];
     [textWidth setTag:123];
-
+    
     // Check for previous width setting
     if([[NSUserDefaults standardUserDefaults] objectForKey:@"prefCustomImageWidth"] != nil)
         [textWidth setText:[[NSUserDefaults standardUserDefaults] objectForKey:@"prefCustomImageWidth"]];
     else
         [textWidth setText:[NSString stringWithFormat:@"%d", (int)currentImage.size.width]];
-
+    
     [customSizeAlert addSubview:textWidth];
-
+    
     labelHeight = [[UILabel alloc] initWithFrame:CGRectMake(145.0, 50.0, 125.0, 25.0)];
     labelHeight.backgroundColor = [UIColor clearColor];
     labelHeight.textColor = [UIColor whiteColor];
     labelHeight.text = NSLocalizedString(@"Height", @"");
     [customSizeAlert addSubview:labelHeight];
-
+    
     textHeight = [[UITextField alloc] initWithFrame:CGRectMake(145.0, 80.0, 125.0, 25.0)];
     [textHeight setBackgroundColor:[UIColor whiteColor]];
     [textHeight setPlaceholder:NSLocalizedString(@"Height", @"")];
     [textHeight setDelegate:self];
     [textHeight setKeyboardType:UIKeyboardTypeNumberPad];
     [textHeight setTag:456];
-
+    
     // Check for previous height setting
     if([[NSUserDefaults standardUserDefaults] objectForKey:@"prefCustomImageHeight"] != nil)
         [textHeight setText:[[NSUserDefaults standardUserDefaults] objectForKey:@"prefCustomImageHeight"]];
     else
         [textHeight setText:[NSString stringWithFormat:@"%d", (int)currentImage.size.height]];
-
+    
     [customSizeAlert addSubview:textHeight];
-
+    
     //fix the dialog position for older devices on iOS 3
     float version = [[[UIDevice currentDevice] systemVersion] floatValue];
     if (version <= 3.1)
     {
         customSizeAlert.transform = CGAffineTransformTranslate(customSizeAlert.transform, 0.0, 100.0);
     }
-
+    
     [customSizeAlert show];
     currentAlert = customSizeAlert;
-
+    
     [textWidth becomeFirstResponder];
 }
 
@@ -851,12 +953,12 @@
 				if ([buttonTitle isEqualToString:NSLocalizedString(@"Yes", @"")]){
 					[[UIApplication sharedApplication] openURL:[NSURL URLWithString: @"http://videopress.com"]];
 				}
-			}		
+			}
 			default:
 				break;
 		}
 	}
-
+    
     if (currentAlert == alertView) {
         currentAlert = nil;
     }
@@ -876,9 +978,9 @@
     if (currentAlert == alertView) {
         currentAlert = nil;
     }
-
+    
 	if (alertView.tag == 101) { //VideoPress Promo Alert
-	
+        
 		return;
 	}
 	
@@ -1031,33 +1133,33 @@
 }
 
 
-/* 
+/*
  * Take Asset URL and set imageJPEG property to NSData containing the
  * associated JPEG, including the metadata we're after.
  */
--(void)getMetadataFromAssetForURL:(NSURL *)url {	
+-(void)getMetadataFromAssetForURL:(NSURL *)url {
     ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
     [assetslibrary assetForURL:url
 				   resultBlock: ^(ALAsset *myasset) {
 					   ALAssetRepresentation *rep = [myasset defaultRepresentation];
 					   
-					   WPLog(@"getJPEGFromAssetForURL: default asset representation for %@: uti: %@ size: %lld url: %@ orientation: %d scale: %f metadata: %@", 
-							 url, [rep UTI], [rep size], [rep url], [rep orientation], 
+					   WPLog(@"getJPEGFromAssetForURL: default asset representation for %@: uti: %@ size: %lld url: %@ orientation: %d scale: %f metadata: %@",
+							 url, [rep UTI], [rep size], [rep url], [rep orientation],
 							 [rep scale], [rep metadata]);
 					   
 					   Byte *buf = malloc([rep size]);  // will be freed automatically when associated NSData is deallocated
 					   NSError *err = nil;
-					   NSUInteger bytes = [rep getBytes:buf fromOffset:0LL 
+					   NSUInteger bytes = [rep getBytes:buf fromOffset:0LL
 												 length:[rep size] error:&err];
 					   if (err || bytes == 0) {
-						   // Are err and bytes == 0 redundant? Doc says 0 return means 
+						   // Are err and bytes == 0 redundant? Doc says 0 return means
 						   // error occurred which presumably means NSError is returned.
 						   free(buf); // Free up memory so we don't leak.
 						   WPLog(@"error from getBytes: %@", err);
 						   
 						   return;
-					   } 
-					   NSData *imageJPEG = [NSData dataWithBytesNoCopy:buf length:[rep size] 
+					   }
+					   NSData *imageJPEG = [NSData dataWithBytesNoCopy:buf length:[rep size]
 														  freeWhenDone:YES];  // YES means free malloc'ed buf that backs this when deallocated
 					   
 					   CGImageSourceRef  source ;
@@ -1067,7 +1169,7 @@
                        
                        //make the metadata dictionary mutable so we can remove properties to it
                        NSMutableDictionary *metadataAsMutable = [metadata mutableCopy];
-
+                       
 					   if(!self.apost.blog.geolocationEnabled) {
 						   //we should remove the GPS info if the blog has the geolocation set to off
 						   
@@ -1184,7 +1286,7 @@
     CGSize smallSize =  [[predefDim objectForKey: @"smallSize"] CGSizeValue];
     CGSize mediumSize = [[predefDim objectForKey: @"mediumSize"] CGSizeValue];
     CGSize largeSize =  [[predefDim objectForKey: @"largeSize"] CGSizeValue];
-    switch (currentImage.imageOrientation) { 
+    switch (currentImage.imageOrientation) {
         case UIImageOrientationLeft:
         case UIImageOrientationLeftMirrored:
         case UIImageOrientationRight:
@@ -1204,41 +1306,41 @@
 	switch (resize) {
 		case kResizeSmall:
 			if(currentImage.size.width > smallSize.width  || currentImage.size.height > smallSize.height)
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:smallSize  
-												interpolationQuality:kCGInterpolationHigh]; 
-			else  
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:originalSize  
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:smallSize
+												interpolationQuality:kCGInterpolationHigh];
+			else
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:originalSize
 												interpolationQuality:kCGInterpolationHigh];
 			break;
 		case kResizeMedium:
-			if(currentImage.size.width > mediumSize.width  || currentImage.size.height > mediumSize.height) 
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:mediumSize  
-												interpolationQuality:kCGInterpolationHigh]; 
-			else  
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:originalSize  
+			if(currentImage.size.width > mediumSize.width  || currentImage.size.height > mediumSize.height)
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:mediumSize
+												interpolationQuality:kCGInterpolationHigh];
+			else
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:originalSize
 												interpolationQuality:kCGInterpolationHigh];
 			break;
 		case kResizeLarge:
-			if(currentImage.size.width > largeSize.width || currentImage.size.height > largeSize.height) 
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:largeSize  
-												interpolationQuality:kCGInterpolationHigh]; 
-			else  
-				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit  
-															  bounds:originalSize  
+			if(currentImage.size.width > largeSize.width || currentImage.size.height > largeSize.height)
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:largeSize
+												interpolationQuality:kCGInterpolationHigh];
+			else
+				resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+															  bounds:originalSize
 												interpolationQuality:kCGInterpolationHigh];
 			break;
 		case kResizeOriginal:
-			resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit 
-														  bounds:originalSize 
+			resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+														  bounds:originalSize
 											interpolationQuality:kCGInterpolationHigh];
 			break;
 	}
-
+    
 	
 	return resizedImage;
 }
@@ -1249,12 +1351,12 @@
 	if(currentImage.size.width > width || currentImage.size.height > height) {
 		// Resize the image using the selected dimensions
 		resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
-													  bounds:CGSizeMake(width, height) 
+													  bounds:CGSizeMake(width, height)
 										interpolationQuality:kCGInterpolationHigh];
 	} else {
 		//use the original dimension
-		resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit 
-													  bounds:CGSizeMake(currentImage.size.width, currentImage.size.height) 
+		resizedImage = [original resizedImageWithContentMode:UIViewContentModeScaleAspectFit
+													  bounds:CGSizeMake(currentImage.size.width, currentImage.size.height)
 										interpolationQuality:kCGInterpolationHigh];
 	}
 	
@@ -1262,7 +1364,8 @@
 }
 
 - (UIImage *)generateThumbnailFromImage:(UIImage *)theImage andSize:(CGSize)targetSize {
-    return [theImage thumbnailImage:75 transparentBorder:0 cornerRadius:0 interpolationQuality:kCGInterpolationHigh]; 
+    CGFloat scale =[[UIScreen mainScreen] scale];
+    return [theImage thumbnailImage:targetSize.height * scale transparentBorder:0 cornerRadius:0 interpolationQuality:kCGInterpolationHigh];
 }
 
 - (void)useImage:(UIImage *)theImage {
@@ -1271,12 +1374,12 @@
 	UIImage *imageThumbnail = [self generateThumbnailFromImage:theImage andSize:CGSizeMake(75, 75)];
 	NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 	[formatter setDateFormat:@"yyyyMMdd-HHmmss"];
-		
+    
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
 	NSString *filename = [NSString stringWithFormat:@"%@.jpg", [formatter stringFromDate:[NSDate date]]];
 	NSString *filepath = [documentsDirectory stringByAppendingPathComponent:filename];
-
+    
 	if (self.currentImageMetadata != nil) {
 		// Write the EXIF data with the image data to disk
 		CGImageSourceRef  source = NULL;
@@ -1284,13 +1387,13 @@
 		BOOL success = NO;
         //this will be the data CGImageDestinationRef will write into
         NSMutableData *dest_data = [NSMutableData data];
-
+        
 		source = CGImageSourceCreateWithData((__bridge CFDataRef)imageData, NULL);
         if (source) {
             CFStringRef UTI = CGImageSourceGetType(source); //this is the type of image (e.g., public.jpeg)
             destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)dest_data,UTI,1,NULL);
             
-            if(destination) {                
+            if(destination) {
                 //add the image contained in the image source to the destination, copying the old metadata
                 CGImageDestinationAddImageFromSource(destination,source,0, (__bridge CFDictionaryRef) self.currentImageMetadata);
                 
@@ -1322,7 +1425,7 @@
 		NSFileManager *fileManager = [NSFileManager defaultManager];
 		[fileManager createFileAtPath:filepath contents:imageData attributes:nil];
 	}
-
+    
 	if(currentOrientation == kLandscape)
 		imageMedia.orientation = @"landscape";
 	else
@@ -1340,7 +1443,7 @@
 	imageMedia.height = [NSNumber numberWithInt:theImage.size.height];
     if (isPickingFeaturedImage)
         [[NSNotificationCenter defaultCenter] postNotificationName:@"UploadingFeaturedImage" object:nil];
-
+    
     [imageMedia uploadWithSuccess:^{
         if ([imageMedia isDeleted]) {
             NSLog(@"Media deleted while uploading (%@)", imageMedia);
@@ -1375,28 +1478,28 @@
     UIImage *thumbnail = nil;
 	NSTimeInterval duration = 0.0;
     NSURL *contentURL = [NSURL fileURLWithPath:videoURL];
-
+    
     AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:contentURL
-                                                 options:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                          [NSNumber numberWithBool:YES], AVURLAssetPreferPreciseDurationAndTimingKey,
-                                                          nil]];
+                                                options:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                         [NSNumber numberWithBool:YES], AVURLAssetPreferPreciseDurationAndTimingKey,
+                                                         nil]];
     if (asset) {
         duration = CMTimeGetSeconds(asset.duration);
         AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
         imageGenerator.appliesPreferredTrackTransform = YES;
-
+        
         CMTime midpoint = CMTimeMakeWithSeconds(duration/2.0, 600);
         NSError *error = nil;
         CMTime actualTime;
         CGImageRef halfWayImage = [imageGenerator copyCGImageAtTime:midpoint actualTime:&actualTime error:&error];
-
+        
         if (halfWayImage != NULL) {
             thumbnail = [UIImage imageWithCGImage:halfWayImage];
             // Do something interesting with the image.
             CGImageRelease(halfWayImage);
         }
     }
-
+    
 	UIImage *videoThumbnail = [self generateThumbnailFromImage:thumbnail andSize:CGSizeMake(75, 75)];
 	
 	// Save to local file
@@ -1436,7 +1539,7 @@
 		NSUInteger videoHeight = CGImageGetHeight(cgVideoThumbnail);
 		videoMedia.width = [NSNumber numberWithInt:videoWidth];
 		videoMedia.height = [NSNumber numberWithInt:videoHeight];
-
+        
 		[videoMedia uploadWithSuccess:^{
             if ([videoMedia isDeleted]) {
                 NSLog(@"Media deleted while uploading (%@)", videoMedia);
@@ -1447,7 +1550,7 @@
         } failure:nil];
 		isAddingMedia = NO;
 		
-		//switch to the attachment view if we're not already there 
+		//switch to the attachment view if we're not already there
 		[postDetailViewController switchToMedia];
 	}
 	else {
@@ -1464,7 +1567,7 @@
 }
 
 - (BOOL)isDeviceSupportVideo {
-	if(([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] == YES) && 
+	if(([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] == YES) &&
 	   ([[UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera] containsObject:(NSString *)kUTTypeMovie]))
 		return YES;
 	else
@@ -1495,7 +1598,7 @@
 
 - (void)deviceDidRotate:(NSNotification *)notification {
 	if(isAddingMedia == YES) {
-		if(self.currentOrientation != [self interpretOrientation:[[UIDevice currentDevice] orientation]]) {		
+		if(self.currentOrientation != [self interpretOrientation:[[UIDevice currentDevice] orientation]]) {
 			self.currentOrientation = [self interpretOrientation:[[UIDevice currentDevice] orientation]];
 			didChangeOrientationDuringRecord = YES;
 		}
@@ -1505,7 +1608,7 @@
 - (void)checkVideoPressEnabled {
     if(self.isCheckingVideoCapability)
         return;
-
+    
     self.isCheckingVideoCapability = YES;
     [self.apost.blog checkVideoPressEnabledWithSuccess:^(BOOL enabled) {
         self.videoEnabled = enabled;
@@ -1534,16 +1637,16 @@
     [fetchRequest setSortDescriptors:sortDescriptors];
     
     resultsController = [[NSFetchedResultsController alloc]
-                                                      initWithFetchRequest:fetchRequest
-                                                      managedObjectContext:appDelegate.managedObjectContext
-                                                      sectionNameKeyPath:nil
-                                                      cacheName:[NSString stringWithFormat:@"Media-%@-%@",
-                                                                 self.apost.blog.hostURL,
-                                                                 self.apost.postID]];
+                         initWithFetchRequest:fetchRequest
+                         managedObjectContext:appDelegate.managedObjectContext
+                         sectionNameKeyPath:nil
+                         cacheName:[NSString stringWithFormat:@"Media-%@-%@",
+                                    self.apost.blog.hostURL,
+                                    self.apost.postID]];
     resultsController.delegate = self;
     
-     sortDescriptorDate = nil;
-     sortDescriptors = nil;
+    sortDescriptorDate = nil;
+    sortDescriptors = nil;
     
     NSError *error = nil;
     if (![resultsController performFetch:&error]) {
@@ -1571,7 +1674,7 @@
     if (cell) {
         [self configureCell:cell atIndexPath:indexPath];
     }
-
+    
 }
 
 

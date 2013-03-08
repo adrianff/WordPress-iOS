@@ -15,6 +15,7 @@
 #import "UIImage+Resize.h"
 #import "WordPressAppDelegate.h"
 #import "MediaObjectViewController.h"
+#import "PostMediaDelegate.h"
 
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
@@ -25,7 +26,7 @@ static inline double radians(double degrees) {
     return degrees * M_PI / 180;
 }
 
-@interface PostMediaViewController : UIViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIActionSheetDelegate, UIPopoverControllerDelegate, NSFetchedResultsControllerDelegate, UITextFieldDelegate> {
+@interface PostMediaViewController : UIViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIActionSheetDelegate, UIPopoverControllerDelegate, NSFetchedResultsControllerDelegate, UITextFieldDelegate, PostMediaDelegate> {
 	EditPostViewController *__weak postDetailViewController;
 	UIImagePickerController *picker;
 	
@@ -51,6 +52,11 @@ static inline double radians(double degrees) {
 	//used in customResizeField
 	UIAlertView *customSizeAlert;
     UIActionSheet *currentActionSheet;
+    
+    //used for iPhone image animation zoom
+    UIImageView *previewImageView;
+    MediaObjectViewController *mediaView;
+    CGFloat cellOriginY;
 }
 
 @property (nonatomic, strong) IBOutlet UITableView *table;
@@ -107,5 +113,7 @@ static inline double radians(double degrees) {
 - (void)initObjects;
 - (void)addNotifications;
 - (void)removeNotifications;
+- (void)animateIn: (void(^)(void))completion;
+- (void)animateOut;
 
 @end

@@ -10,9 +10,11 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import "WordPressAppDelegate.h"
 #import "Media.h"
+#import "PostMediaDelegate.h"
 
 @interface MediaObjectViewController : UIViewController <UIActionSheetDelegate, UIScrollViewDelegate> {
 	WordPressAppDelegate *__weak appDelegate;
+    id<PostMediaDelegate> delegate;
 	Media *media;
 	MPMoviePlayerController *videoPlayer;
 	UIImageView *imageView;
@@ -26,6 +28,7 @@
 }
 
 @property (nonatomic, weak) WordPressAppDelegate *appDelegate;
+@property (nonatomic, weak) id<PostMediaDelegate> delegate;
 @property (nonatomic, strong) Media *media;
 @property (nonatomic, strong) IBOutlet MPMoviePlayerController *videoPlayer;
 @property (nonatomic, strong) IBOutlet UIImageView *imageView;
